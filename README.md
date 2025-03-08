@@ -75,7 +75,36 @@ A cross-platform video processing application that helps content creators genera
    python main.py
    ```
 
-### Option 3: Build an Executable (Advanced)
+### Option 3: Using the MSI Installer (Recommended for Windows)
+
+The MSI installer provides the most user-friendly installation experience for Windows users:
+
+1. **Download the MSI Installer**
+   - Go to the [Releases](https://github.com/IsaiahDupree/VideoPackagingFast/releases) page
+   - Download the `VideoPackagingFast.msi` file
+
+2. **Run the Installer**
+   - Double-click the MSI file to launch the installer
+   - Follow the on-screen instructions to complete the installation
+   - The application will be properly registered in Windows with Start Menu and Desktop shortcuts
+
+3. **After Installation**
+   - Launch VideoPackagingFast from the Start Menu or Desktop shortcut
+   - No additional setup is required - Python and FFmpeg are included in the installation
+
+4. **Uninstallation**
+   - Uninstall through Windows Settings > Apps or Control Panel > Programs and Features
+
+#### Benefits of the MSI Installer
+
+- **Complete Package**: Bundles Python, FFmpeg, and all dependencies
+- **Professional Installation**: Properly registers the application in Windows
+- **Automatic Updates**: Supports in-place upgrades when a new version is installed
+- **Silent Installation**: Supports command-line installation for enterprise deployment
+
+For more details about the MSI installer, see the [MSI_INSTALLER_GUIDE.md](MSI_INSTALLER_GUIDE.md) file.
+
+### Option 4: Build an Executable (Advanced)
 
 #### Using Pre-Built Executables
 
