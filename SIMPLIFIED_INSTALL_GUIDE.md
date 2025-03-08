@@ -49,12 +49,61 @@ If you encounter any issues during installation:
    - **Python not installed**:
      The installer will download and use an embedded Python if needed.
 
-3. **Manual installation**:
-   If the one-click installer fails, you can try the alternative build scripts:
+## New Direct Packaging Approach
+
+We've added a new simplified packaging approach that creates a ZIP file of the application without relying on PyInstaller, making the process more reliable:
+
+### Using the Direct Packaging Tool
+
+1. **Run the direct packaging script**:
 
    ```batch
-   build_direct_install.bat
+   direct_package.bat
    ```
+
+   This script will:
+   - Create a clean package of all application files
+   - Include all necessary Python scripts and resources
+   - Package FFmpeg binaries (if available)
+   - Create a requirements.txt file for dependencies
+   - Generate startup scripts for Windows and macOS
+   - Create a ZIP package in the `installers` folder
+
+2. **Install from the ZIP package**:
+   - Extract `VideoProcessor_Windows_Latest.zip` from the `installers` folder
+   - Run `run_app.bat` to start the application
+
+### Handling File Access Issues
+
+If you see a warning about file access issues during packaging:
+
+1. **Check the note file**:
+   - Look for a file named `PACKAGING_ISSUE_YYYYMMDD_HHMMSS.md` in the `installers` folder
+   - This file contains detailed instructions on how to resolve the issue
+
+2. **Common solutions**:
+   - Close any running instances of the application
+   - Close any file explorers or terminals that might be accessing files in the application directory
+   - Run the packaging script again
+   - If issues persist, follow the manual packaging instructions in the note file
+
+## Cross-Platform Support
+
+VideoPackagingFast now includes improved cross-platform support:
+
+### For macOS Users
+
+1. **Run the macOS packaging script**:
+
+   ```bash
+   ./direct_package.sh
+   ```
+
+2. **Install from the ZIP package**:
+   - Extract `VideoProcessor_macOS_Latest.zip` from the `installers` folder
+   - Run `./run_app.sh` to start the application
+
+The application is designed to work seamlessly on both Windows and macOS environments.
 
 ## System Requirements
 
