@@ -89,21 +89,34 @@ if %ERRORLEVEL% NEQ 0 (
     goto :error
 )
 
-REM Install PySimpleGUI with the specific version 5.0.0.16
-call :log "Installing PySimpleGUI 5.0.0.16..."
-python install_pysimplegui_5_0_0_16.py >> %LOG_FILE% 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    call :log "[WARNING] PySimpleGUI installation script had issues"
-    call :log "Trying alternative installation methods..."
-    python fix_pysimplegui.py >> %LOG_FILE% 2>&1
+REM Run the direct PySimpleGUI installer
+call :log "Installing PySimpleGUI directly..."
+if exist direct_install_pysimplegui.py (
+    python direct_install_pysimplegui.py >> %LOG_FILE% 2>&1
     if %ERRORLEVEL% NEQ 0 (
-        call :log "[WARNING] Alternative installation also had issues"
-        call :log "Attempting direct pip installation..."
-        pip install PySimpleGUI==5.0.0.16 >> %LOG_FILE% 2>&1
-        if %ERRORLEVEL% NEQ 0 (
-            call :log "[WARNING] All PySimpleGUI installation methods failed"
-            call :log "Continuing with wrapper module..."
-        )
+        call :log "[WARNING] Direct PySimpleGUI installation had issues"
+        call :log "Trying alternative installation methods..."
+    )
+) else (
+    call :log "[WARNING] direct_install_pysimplegui.py not found"
+    call :log "Trying alternative installation methods..."
+)
+
+REM Try alternative PySimpleGUI installation methods if direct install failed or script not found
+if exist fix_pysimplegui.py (
+    call :log "Running fix_pysimplegui.py..."
+    python fix_pysimplegui.py >> %LOG_FILE% 2>&1
+)
+
+REM Last resort - try pip install directly
+call :log "Attempting direct pip installation of PySimpleGUI..."
+pip install PySimpleGUI==5.0.0 >> %LOG_FILE% 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    call :log "[WARNING] Direct pip installation failed, trying alternative versions..."
+    pip install PySimpleGUI==4.60.5 >> %LOG_FILE% 2>&1
+    if %ERRORLEVEL% NEQ 0 (
+        call :log "[WARNING] All PySimpleGUI installation methods failed"
+        call :log "Continuing with wrapper module..."
     )
 )
 
@@ -158,6 +171,35 @@ if not exist wrapper\__init__.py (
     echo # Wrapper package > wrapper\__init__.py
 )
 
+REM Create a simple PySimpleGUI wrapper if it doesn't exist
+if not exist wrapper\PySimpleGUI.py (
+    call :log "Creating basic PySimpleGUI wrapper as fallback..."
+    echo # PySimpleGUI wrapper module - Minimal implementation > wrapper\PySimpleGUI.py
+    echo import tkinter as tk >> wrapper\PySimpleGUI.py
+    echo from tkinter import filedialog, messagebox >> wrapper\PySimpleGUI.py
+    echo. >> wrapper\PySimpleGUI.py
+    echo # Define constants >> wrapper\PySimpleGUI.py
+    echo WINDOW_CLOSED = 'WINDOW_CLOSED' >> wrapper\PySimpleGUI.py
+    echo WIN_CLOSED = WINDOW_CLOSED >> wrapper\PySimpleGUI.py
+    echo. >> wrapper\PySimpleGUI.py
+    echo # Basic functions >> wrapper\PySimpleGUI.py
+    echo def popup^(message, title=None, **kwargs^): >> wrapper\PySimpleGUI.py
+    echo     return messagebox.showinfo^(title or 'Information', message^) >> wrapper\PySimpleGUI.py
+    echo. >> wrapper\PySimpleGUI.py
+    echo # Window class >> wrapper\PySimpleGUI.py
+    echo class Window: >> wrapper\PySimpleGUI.py
+    echo     def __init__^(self, title, layout=None, **kwargs^): >> wrapper\PySimpleGUI.py
+    echo         self.title = title >> wrapper\PySimpleGUI.py
+    echo         self.layout = layout or [] >> wrapper\PySimpleGUI.py
+    echo         self.closed = False >> wrapper\PySimpleGUI.py
+    echo     def read^(self, timeout=None^): >> wrapper\PySimpleGUI.py
+    echo         return WINDOW_CLOSED, None >> wrapper\PySimpleGUI.py
+    echo     def close^(self^): >> wrapper\PySimpleGUI.py
+    echo         self.closed = True >> wrapper\PySimpleGUI.py
+    echo. >> wrapper\PySimpleGUI.py
+    echo print^("WARNING: Using PySimpleGUI wrapper module with limited functionality"^) >> wrapper\PySimpleGUI.py
+)
+
 REM Create a modified spec file that includes the wrapper directory and FFmpeg
 call :log "Creating modified spec file..."
 python -c "
@@ -176,11 +218,11 @@ if spec_file:
             \"datas = [('wrapper', 'wrapper'), \"
         )
     
-    # Ensure FFmpeg is included in the binaries
-    if 'ffmpeg_bin' not in content:
+    # Ensure FFmpeg is included in the binaries if the variable exists
+    if 'binaries = [' in content and 'ffmpeg_bin' not in content:
         content = content.replace(
-            \"ffmpeg_bin = None\",
-            \"ffmpeg_bin = [('ffmpeg_bin/ffmpeg.exe', 'ffmpeg_bin/ffmpeg.exe')]\"
+            \"binaries = [\",
+            \"binaries = [('ffmpeg_bin/ffmpeg.exe', 'ffmpeg_bin'), \"
         )
     
     with open('VideoProcessor_windows_modified.spec', 'w') as f:
@@ -198,7 +240,7 @@ if exist VideoProcessor_windows_modified.spec (
     pyinstaller --noconfirm --clean VideoProcessor_windows.spec >> %LOG_FILE% 2>&1
 ) else (
     call :log "No spec file found, using default PyInstaller settings..."
-    pyinstaller --noconfirm --clean --onedir --windowed --icon=resources/icon.ico main.py --name VideoProcessor >> %LOG_FILE% 2>&1
+    pyinstaller --noconfirm --clean --onedir --windowed --icon=resources/icon.ico --add-data "wrapper;wrapper" --add-binary "ffmpeg_bin/ffmpeg.exe;ffmpeg_bin" main.py --name VideoProcessor >> %LOG_FILE% 2>&1
 )
 
 if %ERRORLEVEL% NEQ 0 (
@@ -243,9 +285,20 @@ if %BUILD_SUCCESS% EQU 1 (
 goto :end
 
 :error
-call :log "[ERROR] Build process failed. Check the log file for details: %LOG_FILE%"
+call :log "====================================================="
+call :log " Build process encountered errors."
+call :log " Please check the log file for details: %LOG_FILE%"
+call :log "====================================================="
 exit /b 1
 
 :end
-call :log "Build process completed."
-exit /b 0
+REM Deactivate virtual environment
+call venv\Scripts\deactivate
+
+echo.
+call :log "Build process completed. See %LOG_FILE% for details."
+if %BUILD_SUCCESS% EQU 1 (
+    call :log "The application is now running for testing."
+)
+
+endlocal
