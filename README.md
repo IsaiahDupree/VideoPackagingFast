@@ -77,29 +77,42 @@ A cross-platform video processing application that helps content creators genera
 
 ### Option 3: Build an Executable (Advanced)
 
-#### Windows
+#### Using Pre-Built Executables
 
-1. Run the stable build script that handles all dependencies:
+1. Download the latest release for your operating system from the [Releases](https://github.com/IsaiahDupree/VideoPackagingFast/releases) page
+2. Extract the ZIP file to any location on your computer
+3. Run the executable file:
+   - Windows: `VideoProcessor.exe`
+   - macOS: `VideoProcessor.app`
 
-   ```bash
-   .\build_windows_stable.bat
-   ```
+#### Creating Your Own Executable
 
-   This script will:
-   - Create a virtual environment
-   - Install a stable version of PySimpleGUI (4.60.4)
-   - Install all required dependencies
-   - Download FFmpeg automatically
-   - Build a standalone executable with PyInstaller
+If you prefer to build the executable yourself, follow these steps:
 
-2. The executable will be in the `dist/VideoProcessor` folder
+### Windows Build Process
 
-3. To create a distributable package:
-   - Copy the entire `dist/VideoProcessor` folder
-   - Rename it to `VideoProcessor_Windows`
-   - Zip the folder to create `VideoProcessor_Windows.zip`
+For the most reliable build experience, use the basic build script:
 
-#### macOS
+```bash
+.\build_windows_basic.bat
+```
+
+This script:
+- Creates a virtual environment
+- Installs PySimpleGUI 4.60.4 (a stable version)
+- Installs all required dependencies
+- Downloads FFmpeg automatically
+- Builds a standalone executable using direct PyInstaller commands (no spec file)
+
+The executable will be in the `dist/VideoProcessor` folder.
+
+Alternative build scripts:
+
+- `build_windows_simple.bat` - Uses a simplified spec file
+- `build_windows_stable.bat` - Uses a specific PySimpleGUI version
+- `build_windows.bat` - Original build script (may encounter issues with newer Python versions)
+
+### macOS Build Process
 
 1. Run the complete build script:
 
@@ -123,11 +136,7 @@ A cross-platform video processing application that helps content creators genera
 
 ## Running on Computers Without Python
 
-VideoPackagingFast is designed to work on computers that don't have Python installed. This is possible because:
-
-1. **Self-contained Application**: The pre-built executable includes a Python interpreter and all necessary libraries
-2. **Bundled FFmpeg**: FFmpeg is included in the package, so users don't need to install it separately
-3. **No External Dependencies**: Everything needed to run the application is contained within the executable
+One of the key features of VideoPackagingFast is that it can run on computers without Python installed. This makes it accessible to non-technical users who just want to use the application without setting up a development environment.
 
 ### For End Users
 
