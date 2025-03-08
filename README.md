@@ -79,14 +79,15 @@ A cross-platform video processing application that helps content creators genera
 
 #### Windows
 
-1. Run the complete build script that handles all dependencies:
+1. Run the stable build script that handles all dependencies:
 
    ```bash
-   .\build_windows_complete.bat
+   .\build_windows_stable.bat
    ```
 
    This script will:
    - Create a virtual environment
+   - Install a stable version of PySimpleGUI (4.60.4)
    - Install all required dependencies
    - Download FFmpeg automatically
    - Build a standalone executable with PyInstaller
