@@ -12,11 +12,34 @@ set "LOG_FILE=install_log_%date:~-4,4%%date:~-7,2%%date:~-10,2%_%time:~0,2%%time
 set "LOG_FILE=%LOG_FILE: =0%"
 echo Installation started at %date% %time% > %LOG_FILE%
 
-REM Function to log messages
+REM Check if the logger helper exists
+if exist install_logger.bat (
+    call install_logger.bat :log_system_info "%LOG_FILE%"
+    call install_logger.bat :log "INFO" "Using enhanced logging" "%LOG_FILE%"
+) else (
+    REM Define simple logging function if helper is not available
+    echo Simple logging mode activated >> %LOG_FILE%
+)
+
+REM Function to log messages (fallback if helper not available)
 :log
-    echo %~1
-    echo %~1 >> %LOG_FILE%
+    if exist install_logger.bat (
+        call install_logger.bat :log "INFO" "%~1" "%LOG_FILE%"
+    ) else (
+        echo %~1
+        echo %~1 >> %LOG_FILE%
+    )
     goto :eof
+
+REM Function to execute commands with logging
+:exec_command
+    if exist install_logger.bat (
+        call install_logger.bat :capture_command "%~1" "%~2" "%LOG_FILE%"
+    ) else (
+        call :log "Executing: %~2"
+        %~1 >> %LOG_FILE% 2>&1
+    )
+    exit /b %ERRORLEVEL%
 
 REM Close any running instances of the application
 call :log "Closing any running instances of the application..."
@@ -41,7 +64,8 @@ if exist VideoProcessor_Windows.zip (
     call :log "Distributable ZIP already exists. Extracting..."
     if exist dist\VideoProcessor rmdir /s /q dist\VideoProcessor
     mkdir dist\VideoProcessor 2>nul
-    powershell -Command "& {try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('VideoProcessor_Windows.zip', 'dist\VideoProcessor'); exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+    
+    call :exec_command "powershell -Command ""& {try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('VideoProcessor_Windows.zip', 'dist\VideoProcessor'); exit 0 } catch { exit 1 }}""" "Extract ZIP file"
     
     if !ERRORLEVEL! EQU 0 (
         call :log "ZIP extracted successfully. Starting application..."
@@ -59,21 +83,21 @@ if %ERRORLEVEL% NEQ 0 (
     call :log "Python not found. Downloading embedded Python..."
     
     REM Download embedded Python
-    powershell -Command "& {try { Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip' -OutFile 'python-embedded.zip'; exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+    call :exec_command "powershell -Command ""& {try { Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip' -OutFile 'python-embedded.zip'; exit 0 } catch { exit 1 }}""" "Download embedded Python"
     
     if %ERRORLEVEL% NEQ 0 (
-        call :log "[ERROR] Failed to download Python. Trying alternative method..."
-        curl -L "https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip" -o python-embedded.zip >> %LOG_FILE% 2>&1
+        call :log "Failed to download Python. Trying alternative method..."
+        call :exec_command "curl -L ""https://www.python.org/ftp/python/3.9.13/python-3.9.13-embed-amd64.zip"" -o python-embedded.zip" "Download Python with curl"
         
         if %ERRORLEVEL% NEQ 0 (
-            call :log "[ERROR] All Python download attempts failed."
+            call :log "All Python download attempts failed."
             goto :error
         )
     )
     
     REM Extract Python
     call :log "Extracting embedded Python..."
-    powershell -Command "& {try { Expand-Archive -Path 'python-embedded.zip' -DestinationPath 'python-embedded' -Force; exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+    call :exec_command "powershell -Command ""& {try { Expand-Archive -Path 'python-embedded.zip' -DestinationPath 'python-embedded' -Force; exit 0 } catch { exit 1 }}""" "Extract Python"
     
     REM Set Python path for this session
     set "PATH=%CD%\python-embedded;%PATH%"
@@ -96,44 +120,44 @@ call venv\Scripts\activate
 
 REM Install dependencies with specific versions
 call :log "Installing dependencies..."
-python -m pip install --upgrade pip >> %LOG_FILE% 2>&1
+call :exec_command "python -m pip install --upgrade pip" "Upgrade pip"
 
 REM Uninstall any existing packages to avoid conflicts
 call :log "Removing any existing packages to avoid conflicts..."
-pip uninstall -y PySimpleGUI pydantic moviepy pydub ffmpeg-python openai anthropic PyInstaller pyinstaller-hooks-contrib >> %LOG_FILE% 2>&1
+call :exec_command "pip uninstall -y PySimpleGUI pydantic moviepy pydub ffmpeg-python openai anthropic PyInstaller pyinstaller-hooks-contrib" "Uninstall existing packages"
 
 REM Install core dependencies first
 call :log "Installing core dependencies..."
-pip install pillow==10.2.0 numpy>=1.22.0 requests>=2.28.0 tqdm>=4.64.0 packaging>=23.0 python-dotenv==1.0.0 >> %LOG_FILE% 2>&1
+call :exec_command "pip install pillow==10.2.0 numpy>=1.22.0 requests>=2.28.0 tqdm>=4.64.0 packaging>=23.0 python-dotenv==1.0.0" "Install core dependencies"
 
 REM Install pydantic with specific version for PyInstaller compatibility
 call :log "Installing pydantic with specific version..."
-pip install pydantic==1.10.8 >> %LOG_FILE% 2>&1
+call :exec_command "pip install pydantic==1.10.8" "Install pydantic"
 
 REM Install media processing libraries
 call :log "Installing media processing libraries..."
-pip install moviepy==1.0.3 pydub==0.25.1 ffmpeg-python==0.2.0 >> %LOG_FILE% 2>&1
+call :exec_command "pip install moviepy==1.0.3 pydub==0.25.1 ffmpeg-python==0.2.0" "Install media libraries"
 
 REM Install AI libraries
 call :log "Installing AI libraries..."
-pip install openai==1.12.0 anthropic==0.8.1 >> %LOG_FILE% 2>&1
+call :exec_command "pip install openai==1.12.0 anthropic==0.8.1" "Install AI libraries"
 
 REM Install PyInstaller with specific version
 call :log "Installing PyInstaller..."
-pip install PyInstaller==5.6.2 pyinstaller-hooks-contrib==2022.0 >> %LOG_FILE% 2>&1
+call :exec_command "pip install PyInstaller==5.6.2 pyinstaller-hooks-contrib==2022.0" "Install PyInstaller"
 
 REM Install PySimpleGUI with the specific version 5.0.0.16
 call :log "Installing PySimpleGUI 5.0.0.16..."
 if exist install_pysimplegui_5_0_0_16.py (
-    python install_pysimplegui_5_0_0_16.py >> %LOG_FILE% 2>&1
+    call :exec_command "python install_pysimplegui_5_0_0_16.py" "Install PySimpleGUI with custom script"
     
     if %ERRORLEVEL% NEQ 0 (
-        call :log "[WARNING] Failed to install PySimpleGUI using the script. Trying direct pip install..."
-        pip install PySimpleGUI==5.0.0.16 --no-deps >> %LOG_FILE% 2>&1
+        call :log "Failed to install PySimpleGUI using the script. Trying direct pip install..."
+        call :exec_command "pip install PySimpleGUI==5.0.0.16 --no-deps" "Install PySimpleGUI with pip"
     )
 ) else (
     call :log "Direct installation script not found. Using pip install..."
-    pip install PySimpleGUI==5.0.0.16 --no-deps >> %LOG_FILE% 2>&1
+    call :exec_command "pip install PySimpleGUI==5.0.0.16 --no-deps" "Install PySimpleGUI with pip"
 )
 
 REM Verify PySimpleGUI installation
@@ -141,7 +165,7 @@ call :log "Verifying PySimpleGUI installation..."
 python -c "import PySimpleGUI; print(f'PySimpleGUI version: {PySimpleGUI.__version__}')" >> %LOG_FILE% 2>&1
 
 if %ERRORLEVEL% NEQ 0 (
-    call :log "[ERROR] PySimpleGUI verification failed. Creating fallback wrapper..."
+    call :log "PySimpleGUI verification failed. Creating fallback wrapper..."
     
     REM Create wrapper directory
     if not exist wrapper mkdir wrapper
@@ -173,20 +197,20 @@ if not exist ffmpeg_bin mkdir ffmpeg_bin
 REM Check if FFmpeg is already downloaded
 if not exist ffmpeg_bin\ffmpeg.exe (
     call :log "Downloading FFmpeg..."
-    powershell -Command "& {try { Invoke-WebRequest -Uri 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip' -OutFile 'ffmpeg.zip'; exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+    call :exec_command "powershell -Command ""& {try { Invoke-WebRequest -Uri 'https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip' -OutFile 'ffmpeg.zip'; exit 0 } catch { exit 1 }}""" "Download FFmpeg"
     
     if %ERRORLEVEL% NEQ 0 (
         call :log "Trying alternative download method..."
-        curl -L "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -o ffmpeg.zip >> %LOG_FILE% 2>&1
+        call :exec_command "curl -L ""https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"" -o ffmpeg.zip" "Download FFmpeg with curl"
         
         if %ERRORLEVEL% NEQ 0 (
-            call :log "[ERROR] Failed to download FFmpeg. Build will continue but may fail later."
+            call :log "Failed to download FFmpeg. Build will continue but may fail later."
         )
     )
     
     if exist ffmpeg.zip (
         call :log "Extracting FFmpeg..."
-        powershell -Command "& {try { Expand-Archive -Path 'ffmpeg.zip' -DestinationPath 'ffmpeg_temp' -Force; exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+        call :exec_command "powershell -Command ""& {try { Expand-Archive -Path 'ffmpeg.zip' -DestinationPath 'ffmpeg_temp' -Force; exit 0 } catch { exit 1 }}""" "Extract FFmpeg"
         
         REM Find and copy the ffmpeg.exe file
         for /r ffmpeg_temp %%i in (ffmpeg.exe) do (
@@ -199,98 +223,19 @@ if not exist ffmpeg_bin\ffmpeg.exe (
     )
 )
 
-REM Create optimized spec file for PyInstaller
-call :log "Creating optimized spec file..."
-echo # -*- mode: python ; coding: utf-8 -*- > VideoProcessor_optimized.spec
-echo import os >> VideoProcessor_optimized.spec
-echo block_cipher = None >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo # Define paths >> VideoProcessor_optimized.spec
-echo ffmpeg_bin = [('ffmpeg_bin/ffmpeg.exe', 'ffmpeg_bin')] if os.path.exists('ffmpeg_bin/ffmpeg.exe') else [] >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo # Define data files >> VideoProcessor_optimized.spec
-echo datas = [] >> VideoProcessor_optimized.spec
-echo if os.path.exists('resources'): >> VideoProcessor_optimized.spec
-echo     datas.append(('resources', 'resources')) >> VideoProcessor_optimized.spec
-echo if os.path.exists('wrapper'): >> VideoProcessor_optimized.spec
-echo     datas.append(('wrapper', 'wrapper')) >> VideoProcessor_optimized.spec
-echo if os.path.exists('ai_prompts.json'): >> VideoProcessor_optimized.spec
-echo     datas.append(('ai_prompts.json', '.')) >> VideoProcessor_optimized.spec
-echo if os.path.exists('config.json'): >> VideoProcessor_optimized.spec
-echo     datas.append(('config.json', '.')) >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo a = Analysis( >> VideoProcessor_optimized.spec
-echo     ['main.py'], >> VideoProcessor_optimized.spec
-echo     pathex=[], >> VideoProcessor_optimized.spec
-echo     binaries=ffmpeg_bin, >> VideoProcessor_optimized.spec
-echo     datas=datas, >> VideoProcessor_optimized.spec
-echo     hiddenimports=[ >> VideoProcessor_optimized.spec
-echo         'PIL', 'numpy', 'requests', 'tqdm', 'packaging', 'dotenv', 'pydantic', >> VideoProcessor_optimized.spec
-echo         'moviepy', 'pydub', 'openai', 'anthropic', >> VideoProcessor_optimized.spec
-echo         'PySimpleGUI', 'tkinter', 'tkinter.filedialog', 'tkinter.messagebox', >> VideoProcessor_optimized.spec
-echo         'tkinter.constants', 'tkinter.commondialog', 'tkinter.dialog' >> VideoProcessor_optimized.spec
-echo     ], >> VideoProcessor_optimized.spec
-echo     hookspath=[], >> VideoProcessor_optimized.spec
-echo     hooksconfig={}, >> VideoProcessor_optimized.spec
-echo     runtime_hooks=[], >> VideoProcessor_optimized.spec
-echo     excludes=[], >> VideoProcessor_optimized.spec
-echo     win_no_prefer_redirects=False, >> VideoProcessor_optimized.spec
-echo     win_private_assemblies=False, >> VideoProcessor_optimized.spec
-echo     cipher=block_cipher, >> VideoProcessor_optimized.spec
-echo     noarchive=False, >> VideoProcessor_optimized.spec
-echo ) >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher) >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo icon_file = None >> VideoProcessor_optimized.spec
-echo if os.path.exists('resources/icon.ico'): >> VideoProcessor_optimized.spec
-echo     icon_file = 'resources/icon.ico' >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo exe = EXE( >> VideoProcessor_optimized.spec
-echo     pyz, >> VideoProcessor_optimized.spec
-echo     a.scripts, >> VideoProcessor_optimized.spec
-echo     [], >> VideoProcessor_optimized.spec
-echo     exclude_binaries=True, >> VideoProcessor_optimized.spec
-echo     name='VideoProcessor', >> VideoProcessor_optimized.spec
-echo     debug=False, >> VideoProcessor_optimized.spec
-echo     bootloader_ignore_signals=False, >> VideoProcessor_optimized.spec
-echo     strip=False, >> VideoProcessor_optimized.spec
-echo     upx=True, >> VideoProcessor_optimized.spec
-echo     upx_exclude=[], >> VideoProcessor_optimized.spec
-echo     runtime_tmpdir=None, >> VideoProcessor_optimized.spec
-echo     console=False, >> VideoProcessor_optimized.spec
-echo     disable_windowed_traceback=False, >> VideoProcessor_optimized.spec
-echo     argv_emulation=False, >> VideoProcessor_optimized.spec
-echo     target_arch=None, >> VideoProcessor_optimized.spec
-echo     codesign_identity=None, >> VideoProcessor_optimized.spec
-echo     entitlements_file=None, >> VideoProcessor_optimized.spec
-echo     icon=icon_file, >> VideoProcessor_optimized.spec
-echo ) >> VideoProcessor_optimized.spec
-echo. >> VideoProcessor_optimized.spec
-echo coll = COLLECT( >> VideoProcessor_optimized.spec
-echo     exe, >> VideoProcessor_optimized.spec
-echo     a.binaries, >> VideoProcessor_optimized.spec
-echo     a.zipfiles, >> VideoProcessor_optimized.spec
-echo     a.datas, >> VideoProcessor_optimized.spec
-echo     strip=False, >> VideoProcessor_optimized.spec
-echo     upx=True, >> VideoProcessor_optimized.spec
-echo     upx_exclude=[], >> VideoProcessor_optimized.spec
-echo     name='VideoProcessor', >> VideoProcessor_optimized.spec
-echo ) >> VideoProcessor_optimized.spec
-
-REM Build the application
-call :log "Building the application..."
-pyinstaller VideoProcessor_optimized.spec --noconfirm >> %LOG_FILE% 2>&1
-
-if %ERRORLEVEL% NEQ 0 (
-    call :log "[ERROR] Build failed. Trying alternative approach..."
-    
-    REM Try with a simpler spec file
-    call :log "Creating simplified spec file..."
-    pyinstaller --name=VideoProcessor --windowed --noconfirm main.py >> %LOG_FILE% 2>&1
-    
-    if %ERRORLEVEL% NEQ 0 (
-        goto :error
+REM Use external spec file if available
+if exist VideoProcessor.spec (
+    call :log "Using existing spec file..."
+    call :exec_command "pyinstaller VideoProcessor.spec --noconfirm" "Build with existing spec"
+) else (
+    REM Create optimized spec file for PyInstaller
+    call :log "Creating optimized spec file..."
+    if exist create_spec_file.py (
+        call :exec_command "python create_spec_file.py" "Generate spec file"
+    ) else (
+        REM Simplified spec file creation
+        call :log "Using simplified spec creation..."
+        call :exec_command "pyinstaller --name=VideoProcessor --windowed --add-data ""ffmpeg_bin;ffmpeg_bin"" --icon=resources\icon.ico main.py" "Build with simplified spec"
     )
 )
 
@@ -302,13 +247,13 @@ if exist dist\VideoProcessor\VideoProcessor.exe (
     REM Create distributable ZIP file
     call :log "Creating distributable ZIP file..."
     if exist VideoProcessor_Windows.zip del VideoProcessor_Windows.zip
-    powershell -Command "& {try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('dist\VideoProcessor', 'VideoProcessor_Windows.zip'); exit 0 } catch { exit 1 }}" >> %LOG_FILE% 2>&1
+    call :exec_command "powershell -Command ""& {try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('dist\VideoProcessor', 'VideoProcessor_Windows.zip'); exit 0 } catch { exit 1 }}""" "Create ZIP file"
     
     REM Launch the application
     call :log "Starting the application..."
     start "" dist\VideoProcessor\VideoProcessor.exe
 ) else (
-    call :log "[ERROR] Build failed. Check the log file for details."
+    call :log "Build failed. Check the log file for details."
     goto :error
 )
 
@@ -320,8 +265,22 @@ if exist *.spec del *.spec
 if exist venv rmdir /s /q venv
 
 call :log "Installation completed successfully!"
+
+REM Run diagnostics if available
+if exist install_diagnostics.py (
+    call :log "Running installation diagnostics..."
+    python install_diagnostics.py "%LOG_FILE%" >> %LOG_FILE% 2>&1
+)
+
 exit /b 0
 
 :error
-call :log "[ERROR] Installation failed. Please check the log file for details: %LOG_FILE%"
+call :log "Installation failed. Please check the log file for details: %LOG_FILE%"
+
+REM Run diagnostics on error if available
+if exist install_diagnostics.py (
+    call :log "Running error diagnostics..."
+    python install_diagnostics.py "%LOG_FILE%" >> %LOG_FILE% 2>&1
+)
+
 exit /b 1
