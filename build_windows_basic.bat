@@ -23,7 +23,11 @@ python -m pip install --upgrade pip
 
 REM Install a specific version of PySimpleGUI that we know works
 echo Installing stable version of PySimpleGUI...
-pip install PySimpleGUI==4.60.4
+pip install PySimpleGUI==5.0.0.16
+
+REM Install specific version of pydantic that works with PyInstaller
+echo Installing compatible pydantic version...
+pip install pydantic==1.10.8
 
 REM Install PyInstaller with specific version
 echo Installing PyInstaller...

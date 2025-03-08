@@ -23,7 +23,11 @@ python -m pip install --upgrade pip
 
 REM Install a specific version of PySimpleGUI that we know works
 echo Installing stable version of PySimpleGUI...
-pip install PySimpleGUI==4.60.4
+pip install PySimpleGUI==5.0.0.16
+
+REM Install specific version of pydantic that works with PyInstaller
+echo Installing compatible pydantic version...
+pip install pydantic==1.10.8
 
 REM Install PyInstaller with specific version
 echo Installing PyInstaller...
@@ -66,9 +70,12 @@ taskkill /f /im python.exe 2>nul
 REM Wait a moment for processes to fully terminate
 timeout /t 2 /nobreak >nul
 
-REM Build the executable with direct PyInstaller command (no spec file)
-echo Building executable with direct PyInstaller command...
+REM Fix moviepy syntax warning
+echo Fixing moviepy syntax warnings...
+python fix_moviepy_syntax.py
 
+REM Build the application with PyInstaller
+echo Building application with PyInstaller...
 pyinstaller --noconfirm --clean --name "VideoProcessor" ^
   --add-data "assets;assets" ^
   --add-data "ffmpeg_bin;ffmpeg_bin" ^
@@ -81,6 +88,7 @@ pyinstaller --noconfirm --clean --name "VideoProcessor" ^
   --hidden-import moviepy.audio.fx ^
   --hidden-import moviepy.video.fx ^
   --hidden-import engineio.async_drivers.threading ^
+  --exclude-module pydantic.v1 ^
   --windowed ^
   --icon assets\icon.ico ^
   main.py

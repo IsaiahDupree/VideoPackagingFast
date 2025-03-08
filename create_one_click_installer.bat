@@ -23,8 +23,12 @@ python -m pip install --upgrade pip
 
 REM Install PySimpleGUI and other dependencies
 echo Installing application dependencies...
-pip install PySimpleGUI==4.60.4
+pip install PySimpleGUI==5.0.0.16
 pip install moviepy==1.0.3 pydub==0.25.1 python-dotenv==1.0.0 pillow==10.2.0 ffmpeg-python==0.2.0 numpy>=1.22.0 tqdm>=4.64.0 requests>=2.28.0 packaging>=23.0 openai==1.12.0 anthropic==0.8.1
+
+REM Install specific version of pydantic that works with PyInstaller
+echo Installing compatible pydantic version...
+pip install pydantic==1.10.8
 
 REM Install PyInstaller
 echo Installing build tools...
@@ -64,52 +68,30 @@ taskkill /f /im python.exe 2>nul
 REM Wait a moment for processes to fully terminate
 timeout /t 2 /nobreak >nul
 
-REM Build options
-echo.
-echo Build Options:
-echo 1. Single executable file (slower startup, but simplest distribution)
-echo 2. Folder with executable (faster startup, requires distributing folder)
-echo.
-set /p BUILD_TYPE="Select build type (1 or 2): "
+REM Fix moviepy syntax warning
+echo Fixing moviepy syntax warnings...
+python fix_moviepy_syntax.py
 
-if "%BUILD_TYPE%"=="1" (
-    echo.
-    echo Building single-file executable...
-    pyinstaller --noconfirm --clean --name "VideoProcessor" ^
-      --add-data "assets;assets" ^
-      --add-data "ffmpeg_bin;ffmpeg_bin" ^
-      --add-data "utils;utils" ^
-      --hidden-import pkg_resources.py2_warn ^
-      --hidden-import PIL ^
-      --hidden-import PIL._tkinter_finder ^
-      --hidden-import PIL.Image ^
-      --hidden-import PIL.ImageTk ^
-      --hidden-import moviepy.audio.fx ^
-      --hidden-import moviepy.video.fx ^
-      --hidden-import engineio.async_drivers.threading ^
-      --onefile ^
-      --windowed ^
-      --icon assets\icon.ico ^
-      main.py
-) else (
-    echo.
-    echo Building folder-based executable...
-    pyinstaller --noconfirm --clean --name "VideoProcessor" ^
-      --add-data "assets;assets" ^
-      --add-data "ffmpeg_bin;ffmpeg_bin" ^
-      --add-data "utils;utils" ^
-      --hidden-import pkg_resources.py2_warn ^
-      --hidden-import PIL ^
-      --hidden-import PIL._tkinter_finder ^
-      --hidden-import PIL.Image ^
-      --hidden-import PIL.ImageTk ^
-      --hidden-import moviepy.audio.fx ^
-      --hidden-import moviepy.video.fx ^
-      --hidden-import engineio.async_drivers.threading ^
-      --windowed ^
-      --icon assets\icon.ico ^
-      main.py
-)
+REM Build options - Automatically select option 1 for single executable file
+echo.
+echo Building single-file executable...
+pyinstaller --noconfirm --clean --name "VideoProcessor" ^
+  --add-data "assets;assets" ^
+  --add-data "ffmpeg_bin;ffmpeg_bin" ^
+  --add-data "utils;utils" ^
+  --hidden-import pkg_resources.py2_warn ^
+  --hidden-import PIL ^
+  --hidden-import PIL._tkinter_finder ^
+  --hidden-import PIL.Image ^
+  --hidden-import PIL.ImageTk ^
+  --hidden-import moviepy.audio.fx ^
+  --hidden-import moviepy.video.fx ^
+  --hidden-import engineio.async_drivers.threading ^
+  --exclude-module pydantic.v1 ^
+  --onefile ^
+  --windowed ^
+  --icon assets\icon.ico ^
+  main.py
 
 if %ERRORLEVEL% NEQ 0 (
     echo.
@@ -170,13 +152,8 @@ if %ERRORLEVEL% EQU 0 (
     echo ===================================================
     echo NSIS not found. Skipping installer creation.
     echo.
-    if "%BUILD_TYPE%"=="1" (
-        echo The single-file executable is at: dist\VideoProcessor.exe
-        echo You can distribute this file directly to users.
-    ) else (
-        echo The executable is in the dist\VideoProcessor folder.
-        echo You can zip this folder and distribute it to users.
-    )
+    echo The single-file executable is at: dist\VideoProcessor.exe
+    echo You can distribute this file directly to users.
     echo ===================================================
 )
 

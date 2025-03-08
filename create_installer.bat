@@ -23,8 +23,12 @@ python -m pip install --upgrade pip
 
 REM Install PySimpleGUI and other dependencies
 echo Installing application dependencies...
-pip install PySimpleGUI==4.60.4
+pip install PySimpleGUI==5.0.0.16
 pip install moviepy==1.0.3 pydub==0.25.1 python-dotenv==1.0.0 pillow==10.2.0 ffmpeg-python==0.2.0 numpy>=1.22.0 tqdm>=4.64.0 requests>=2.28.0 packaging>=23.0 openai==1.12.0 anthropic==0.8.1
+
+REM Install specific version of pydantic that works with PyInstaller
+echo Installing compatible pydantic version...
+pip install pydantic==1.10.8
 
 REM Install PyInstaller and NSIS for creating installers
 echo Installing build tools...
