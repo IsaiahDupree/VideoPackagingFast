@@ -12,6 +12,7 @@ This document provides comprehensive instructions for building the VideoPackagin
 ## Building the Application
 
 ### Prerequisites
+
 - Python 3.8 or later
 - Git
 - Windows or macOS
@@ -22,9 +23,11 @@ This document provides comprehensive instructions for building the VideoPackagin
 We now have a simplified build process that addresses PySimpleGUI issues and bundles FFmpeg automatically:
 
 1. **Simplified Build** (Recommended for most cases):
+
    ```batch
    build_simplified.bat
    ```
+
    This script:
    - Installs PySimpleGUI 5.0.0.16 specifically
    - Automatically bundles FFmpeg with the executable
@@ -32,19 +35,23 @@ We now have a simplified build process that addresses PySimpleGUI issues and bun
    - Launches the application for immediate testing
 
 2. **Alternative Build Scripts** (If simplified build fails):
+
    ```batch
    build_direct_install.bat
    ```
+
    This script uses a direct installation method for PySimpleGUI to bypass dependency conflicts.
 
    ```batch
    build_with_pysimplegui_fix.bat
    ```
+
    This script attempts to fix PySimpleGUI import issues with a wrapper approach.
 
    ```batch
    build_windows_pydantic_fix.bat
    ```
+
    This script focuses on fixing pydantic compatibility issues with PyInstaller.
 
 ### Automatic Launch After Build
@@ -68,6 +75,7 @@ After building, it's crucial to test the executable thoroughly:
    - [ ] FFmpeg integration works correctly
 
 2. **Automated Testing** (if available):
+
    ```batch
    run_tests.bat
    ```
@@ -83,7 +91,7 @@ clean_repo.bat
 This script will:
 1. Remove build artifacts (build/, dist/ directories)
 2. Remove virtual environments (venv/)
-3. Remove temporary files and caches (__pycache__/, *.pyc)
+3. Remove temporary files and caches (`__pycache__/`, *.pyc)
 4. Preserve important configuration files
 5. Ensure no API keys or sensitive data remain
 
@@ -103,27 +111,33 @@ If you prefer to clean manually, ensure these items are addressed:
 ### Preparing for Push to Master
 
 1. **Create a Feature Branch** (if not already on one):
+
    ```bash
    git checkout -b feature-name
    ```
 
 2. **Stage Changes**:
+
    ```bash
    git add .
    ```
 
 3. **Review Changes**:
+
    ```bash
    git status
    ```
+
    Verify that no sensitive files or large binaries are being committed.
 
 4. **Commit Changes**:
+
    ```bash
    git commit -m "Descriptive message about your changes"
    ```
 
 5. **Pull Latest Changes from Master**:
+
    ```bash
    git checkout master
    git pull origin master
@@ -181,6 +195,7 @@ After pushing to GitHub:
 ### GitHub Issues
 
 1. **Unrelated Histories Error**:
+
    ```bash
    git pull origin master --allow-unrelated-histories
    ```
@@ -198,11 +213,13 @@ After pushing to GitHub:
 ## Quick Reference
 
 ### Build and Test
+
 ```batch
 build_simplified.bat
 ```
 
 ### Clean and Prepare for GitHub
+
 ```batch
 clean_repo.bat
 git add .

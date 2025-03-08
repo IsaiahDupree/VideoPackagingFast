@@ -31,27 +31,41 @@ def fix_pysimplegui_installation():
     subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "PySimpleGUI"], 
                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    # Install the specific version from PySimpleGUI.net
+    # Install the specific version 5.0.0.16 as requested
     logging.info("Installing PySimpleGUI 5.0.0.16...")
-    result = subprocess.run([sys.executable, "-m", "pip", "install", "PySimpleGUI==5.0.0.16", "-i", "https://PySimpleGUI.net/install"], 
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    if result.returncode != 0:
-        logging.error(f"Failed to install PySimpleGUI 5.0.0.16: {result.stderr.decode()}")
-        logging.info("Trying alternative installation method...")
+    # Try multiple installation methods to ensure success
+    methods = [
+        # Method 1: Direct from PySimpleGUI.net
+        [sys.executable, "-m", "pip", "install", "PySimpleGUI==5.0.0.16", "-i", "https://PySimpleGUI.net/install"],
+        # Method 2: From PyPI with specific version
+        [sys.executable, "-m", "pip", "install", "PySimpleGUI==5.0.0.16"],
+        # Method 3: From GitHub with specific version
+        [sys.executable, "-m", "pip", "install", "git+https://github.com/PySimpleGUI/PySimpleGUI.git@5.0.0.16"]
+    ]
+    
+    success = False
+    for method in methods:
+        logging.info(f"Trying installation method: {' '.join(method)}")
+        result = subprocess.run(method, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        # Try direct installation without version specification
-        result = subprocess.run([sys.executable, "-m", "pip", "install", "PySimpleGUI", "-i", "https://PySimpleGUI.net/install"], 
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-        if result.returncode != 0:
-            logging.error(f"Alternative installation also failed: {result.stderr.decode()}")
-            return False
+        if result.returncode == 0:
+            logging.info("Installation successful!")
+            success = True
+            break
+        else:
+            logging.warning(f"Installation method failed: {result.stderr.decode()}")
+    
+    if not success:
+        logging.error("All installation methods failed")
+        return False
     
     # Verify installation
     try:
         import PySimpleGUI as sg
         logging.info(f"Successfully installed PySimpleGUI version: {sg.__version__}")
+        if sg.__version__ != "5.0.0.16":
+            logging.warning(f"Installed version {sg.__version__} does not match requested version 5.0.0.16")
         return True
     except ImportError as e:
         logging.error(f"Failed to import PySimpleGUI after installation: {str(e)}")
