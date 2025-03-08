@@ -1,0 +1,57 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Environment
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Application specific
+output/
+*.mp4
+*.mp3
+*.wav
+*.avi
+*.mov
+*.mkv
+
+# Logs
+*.log
+logs/
+
+# PyInstaller
+*.manifest
+# Allow spec files for cross-platform builds
+# *.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Credential files
+*creds*.txt
+.env
+*token*
+*secret*
+*api_key*
