@@ -41,6 +41,29 @@ REM Function to execute commands with logging
     )
     exit /b %ERRORLEVEL%
 
+REM Function to pause and wait for user input
+:pause_for_user
+    echo.
+    echo %~1
+    echo Press any key to continue...
+    pause > nul
+    goto :eof
+
+REM Display welcome message and instructions
+echo Welcome to the VideoPackagingFast Installation Process
+echo This window will remain open during the entire installation
+echo You can find detailed logs in: %LOG_FILE%
+echo.
+echo The installation will perform the following steps:
+echo  1. Check for existing installation
+echo  2. Download and install dependencies
+echo  3. Build the application
+echo  4. Create a distributable package
+echo.
+echo Press any key to begin installation...
+pause > nul
+echo.
+
 REM Close any running instances of the application
 call :log "Closing any running instances of the application..."
 taskkill /f /im VideoProcessor.exe 2>nul
@@ -53,6 +76,7 @@ if exist dist\VideoProcessor\VideoProcessor.exe (
     if !ERRORLEVEL! EQU 1 (
         call :log "Starting existing executable..."
         start "" dist\VideoProcessor\VideoProcessor.exe
+        call :pause_for_user "Application started successfully! You can close this window."
         exit /b 0
     ) else (
         call :log "Proceeding with reinstallation..."
@@ -70,6 +94,7 @@ if exist VideoProcessor_Windows.zip (
     if !ERRORLEVEL! EQU 0 (
         call :log "ZIP extracted successfully. Starting application..."
         start "" dist\VideoProcessor\VideoProcessor.exe
+        call :pause_for_user "Application started successfully! You can close this window."
         exit /b 0
     ) else (
         call :log "Failed to extract ZIP. Proceeding with full installation..."
@@ -91,6 +116,7 @@ if %ERRORLEVEL% NEQ 0 (
         
         if %ERRORLEVEL% NEQ 0 (
             call :log "All Python download attempts failed."
+            call :pause_for_user "Installation failed: Could not download Python. Check your internet connection and try again."
             goto :error
         )
     )
@@ -252,6 +278,20 @@ if exist dist\VideoProcessor\VideoProcessor.exe (
     REM Launch the application
     call :log "Starting the application..."
     start "" dist\VideoProcessor\VideoProcessor.exe
+    
+    echo.
+    echo ===================================================
+    echo Installation completed successfully!
+    echo ===================================================
+    echo.
+    echo The application has been installed and launched.
+    echo A log file has been created at: %LOG_FILE%
+    echo.
+    echo You can find the application at:
+    echo %CD%\dist\VideoProcessor\VideoProcessor.exe
+    echo.
+    echo A distributable ZIP has also been created at:
+    echo %CD%\VideoProcessor_Windows.zip
 ) else (
     call :log "Build failed. Check the log file for details."
     goto :error
@@ -264,23 +304,33 @@ if exist __pycache__ rmdir /s /q __pycache__
 if exist *.spec del *.spec
 if exist venv rmdir /s /q venv
 
-call :log "Installation completed successfully!"
-
 REM Run diagnostics if available
-if exist install_diagnostics.py (
-    call :log "Running installation diagnostics..."
-    python install_diagnostics.py "%LOG_FILE%" >> %LOG_FILE% 2>&1
+if exist run_diagnostics.bat (
+    call :log "Running diagnostics..."
+    call run_diagnostics.bat
 )
 
+call :log "Installation completed successfully!"
+echo.
+echo ===================================================
+echo Installation process has completed!
+echo ===================================================
+echo.
+echo You can find the log file at: %LOG_FILE%
+echo.
+echo Press any key to exit...
+pause > nul
 exit /b 0
 
 :error
-call :log "Installation failed. Please check the log file for details: %LOG_FILE%"
-
-REM Run diagnostics on error if available
-if exist install_diagnostics.py (
-    call :log "Running error diagnostics..."
-    python install_diagnostics.py "%LOG_FILE%" >> %LOG_FILE% 2>&1
-)
-
+call :log "[ERROR] Installation failed. Please check the log file: %LOG_FILE%"
+echo.
+echo ===================================================
+echo Installation process has failed!
+echo ===================================================
+echo.
+echo Please check the log file at: %LOG_FILE% for details.
+echo.
+echo Press any key to exit...
+pause > nul
 exit /b 1

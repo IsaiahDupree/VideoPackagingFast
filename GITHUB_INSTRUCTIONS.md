@@ -4,7 +4,7 @@ This document provides comprehensive instructions for managing the VideoPackagin
 
 ## Repository Information
 
-- **Repository URL**: https://github.com/IsaiahDupree/VideoPackagingFast.git
+- **Repository URL**: [https://github.com/IsaiahDupree/VideoPackagingFast.git](https://github.com/IsaiahDupree/VideoPackagingFast.git)
 - **Primary Branch**: master
 - **License**: MIT
 
@@ -82,21 +82,22 @@ git push origin master
 As of March 2025, we have:
 
 1. **Core Functionality**
-   - ✅ Implemented video processing with FFmpeg integration
-   - ✅ Created cross-platform GUI using PySimpleGUI
-   - ✅ Added AI-powered content generation with OpenAI/Anthropic
-   - ✅ Implemented secure API key handling
+   - Implemented video processing with FFmpeg integration
+   - Created cross-platform GUI using PySimpleGUI
+   - Added AI-powered content generation with OpenAI/Anthropic
+   - Implemented secure API key handling
 
 2. **Build System**
-   - ✅ Created reliable build scripts for Windows and Mac
-   - ✅ Fixed compatibility issues with PyInstaller
-   - ✅ Implemented one-click installer creation
-   - ✅ Added automatic dependency management
+   - Created reliable build scripts for Windows and Mac
+   - Fixed compatibility issues with PyInstaller
+   - Implemented one-click installer creation
+   - Added automatic dependency management
+   - Enhanced installation batch files with improved user feedback
 
 3. **Documentation**
-   - ✅ Comprehensive README with usage instructions
-   - ✅ Build documentation for different environments
-   - ✅ API integration documentation
+   - Comprehensive README with usage instructions
+   - Build documentation for different environments
+   - API integration documentation
 
 ### Future Directions
 
@@ -146,28 +147,47 @@ As of March 2025, we have:
    - FFmpeg (optional, will be downloaded by scripts)
 
 2. **Development Setup**
-   ```bash
-   # Clone the repository
-   git clone https://github.com/IsaiahDupree/VideoPackagingFast.git
-   
-   # Navigate to the repository
-   cd VideoPackagingFast
-   
-   # Create a virtual environment
-   python -m venv venv
-   
-   # Activate the virtual environment
-   # On Windows:
-   venv\Scripts\activate
-   # On Mac/Linux:
-   source venv/bin/activate
-   
-   # Install dependencies
-   pip install -r requirements.txt
-   
-   # Run the application
-   python main.py
-   ```
+
+```bash
+# Clone the repository
+git clone https://github.com/IsaiahDupree/VideoPackagingFast.git
+
+# Navigate to the repository
+cd VideoPackagingFast
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python main.py
+```
+
+## Installation Batch Files
+
+The repository includes two batch files for simplified installation on Windows:
+
+1. **one_click_install.bat**
+   - Provides a streamlined installation process for end users
+   - Automatically downloads dependencies, builds the application, and creates a distributable ZIP
+   - Includes comprehensive error handling and detailed logging
+   - Keeps the window open to show installation results and requires user input to close
+
+2. **one_click_install_check.bat**
+   - Similar to one_click_install.bat but with additional verification steps
+   - Performs more thorough dependency checking and validation
+   - Provides detailed feedback about the installation process
+   - Creates a log file with diagnostic information
+
+Both batch files are designed to be user-friendly with clear progress indicators and will not close automatically, ensuring users can see the results of the installation process.
 
 ## Maintaining API Keys
 

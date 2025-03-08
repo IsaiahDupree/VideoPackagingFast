@@ -335,20 +335,36 @@ if %INSTALL_SUCCESS% EQU 1 (
     
     REM Display success message
     echo.
-    call :log "====================================================="
-    call :log " Installation successful!"
-    call :log " The application is now running."
-    call :log " A distributable ZIP file has been created."
-    call :log "====================================================="
+    echo ===================================================
+    echo  Installation successful!
+    echo ===================================================
+    echo.
+    echo  The application is now running.
+    echo  A distributable ZIP file has been created.
+    echo.
+    echo  You can find the log file at: %LOG_FILE%
+    echo.
+    echo Press any key to exit...
+    pause > nul
 )
 
 goto :end
 
 :error
-call :log "[ERROR] Installation failed. Check the log file for details: %LOG_FILE%"
-pause
+echo.
+echo ===================================================
+echo  Installation failed!
+echo ===================================================
+echo.
+echo Please check the log file at: %LOG_FILE% for details.
+echo.
+echo Press any key to exit...
+pause > nul
 exit /b 1
 
 :end
 call :log "Installation process completed."
+echo.
+echo Press any key to exit...
+pause > nul
 exit /b 0
