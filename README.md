@@ -10,10 +10,13 @@ A cross-platform video processing application that helps content creators genera
 - Cross-platform compatibility (Windows and Mac)
 - Modern and intuitive user interface
 - Customizable themes
+- **No Python installation required** - runs as a standalone executable
 
 ## Running the Application
 
 ### Option 1: Download and Run the Pre-built Executable (For Beginners)
+
+**No Python installation required!** The pre-built executable includes everything needed to run the application.
 
 #### Windows Users
 
@@ -117,9 +120,25 @@ A cross-platform video processing application that helps content creators genera
    - Move `VideoProcessor.app` into this folder
    - Zip the folder to create `VideoProcessor_Mac.zip`
 
-### Creating a Standalone Executable
+## Running on Computers Without Python
 
-The build scripts are designed to create fully standalone executables that will work on computers without Python installed. Here's what makes this possible:
+VideoPackagingFast is designed to work on computers that don't have Python installed. This is possible because:
+
+1. **Self-contained Application**: The pre-built executable includes a Python interpreter and all necessary libraries
+2. **Bundled FFmpeg**: FFmpeg is included in the package, so users don't need to install it separately
+3. **No External Dependencies**: Everything needed to run the application is contained within the executable
+
+### For End Users
+
+If you're an end user who just wants to use the application:
+
+1. Simply download the pre-built executable for your platform (Windows or Mac)
+2. Extract the ZIP file
+3. Run the application directly - no installation required!
+
+### For Developers Creating Distributable Packages
+
+The build scripts (`build_windows_complete.bat` and `build_mac_complete.sh`) are designed to create fully standalone executables that will work on computers without Python installed. Here's what makes this possible:
 
 1. **Bundled Python Interpreter**: PyInstaller includes a Python interpreter with the executable
 2. **Bundled Dependencies**: All Python packages are included in the executable
@@ -142,7 +161,7 @@ This approach ensures that end users can simply download and run the application
 - Make sure FFmpeg is installed correctly
 - For pre-built executables, FFmpeg should be included, but if you encounter this error:
   - **Windows**: Download FFmpeg from [ffmpeg.org](https://ffmpeg.org/download.html) and add it to your PATH
-  - **Mac**: Install FFmpeg using `brew install ffmpeg`
+  - **macOS**: Install FFmpeg using `brew install ffmpeg`
 
 #### API Key Issues
 
