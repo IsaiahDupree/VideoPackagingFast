@@ -91,23 +91,26 @@ If you prefer to build the executable yourself, follow these steps:
 
 ### Windows Build Process
 
-For the most reliable build experience, use the basic build script:
+For the most reliable build experience, use the direct build script:
 
 ```bash
-.\build_windows_basic.bat
+.\build_direct.bat
 ```
 
 This script:
+
 - Creates a virtual environment
 - Installs PySimpleGUI 4.60.4 (a stable version)
 - Installs all required dependencies
 - Downloads FFmpeg automatically
-- Builds a standalone executable using direct PyInstaller commands (no spec file)
+- Builds a standalone executable using direct PyInstaller commands without any spec file
+- Handles all error conditions gracefully
 
 The executable will be in the `dist/VideoProcessor` folder.
 
 Alternative build scripts:
 
+- `build_windows_basic.bat` - Uses basic PyInstaller commands
 - `build_windows_simple.bat` - Uses a simplified spec file
 - `build_windows_stable.bat` - Uses a specific PySimpleGUI version
 - `build_windows.bat` - Original build script (may encounter issues with newer Python versions)
