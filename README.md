@@ -85,11 +85,41 @@ A cross-platform video processing application that helps content creators genera
    - Windows: `VideoProcessor.exe`
    - macOS: `VideoProcessor.app`
 
-#### Creating Your Own Executable
+#### Creating a One-Click Installer
 
-If you prefer to build the executable yourself, follow these steps:
+For the best user experience, you can create a one-click installer that bundles everything into a single executable:
 
-### Windows Build Process
+```bash
+.\create_one_click_installer.bat
+```
+
+This script provides two options:
+
+1. **Single Executable File** - Creates a standalone .exe file that includes everything (Python interpreter, FFmpeg, and all dependencies)
+2. **Folder with Executable** - Creates a folder with the executable and all dependencies (faster startup time)
+
+The script will also:
+- Create a ZIP package for easy distribution
+- Create a Windows installer if NSIS is installed on your system
+
+#### Benefits of the One-Click Installer
+
+- **No Dependencies Required** - Users don't need to install Python or FFmpeg
+- **Simple Distribution** - Just share a single file or installer
+- **Professional Installation** - Adds start menu shortcuts and uninstall information
+- **Cross-Platform** - Works on any Windows system
+
+### Alternative Build Methods
+
+If you prefer more control over the build process, you can use one of the alternative build scripts:
+
+- `build_direct.bat` - Uses direct PyInstaller commands without any spec file
+- `build_windows_basic.bat` - Uses basic PyInstaller commands
+- `build_windows_simple.bat` - Uses a simplified spec file
+- `build_windows_stable.bat` - Uses a specific PySimpleGUI version
+- `build_windows.bat` - Original build script
+
+#### Windows Build Process
 
 For the most reliable build experience, use the direct build script:
 
@@ -98,7 +128,6 @@ For the most reliable build experience, use the direct build script:
 ```
 
 This script:
-
 - Creates a virtual environment
 - Installs PySimpleGUI 4.60.4 (a stable version)
 - Installs all required dependencies
@@ -109,7 +138,6 @@ This script:
 The executable will be in the `dist/VideoProcessor` folder.
 
 Alternative build scripts:
-
 - `build_windows_basic.bat` - Uses basic PyInstaller commands
 - `build_windows_simple.bat` - Uses a simplified spec file
 - `build_windows_stable.bat` - Uses a specific PySimpleGUI version
