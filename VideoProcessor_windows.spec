@@ -1,6 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+import sys
 
 block_cipher = None
+
+# Define FFmpeg binary location
+ffmpeg_bin = None
+if os.path.exists('ffmpeg_bin'):
+    ffmpeg_bin = [('ffmpeg_bin/ffmpeg.exe', 'ffmpeg_bin/ffmpeg.exe')]
+elif os.path.exists('C:\\ffmpeg\\bin\\ffmpeg.exe'):
+    ffmpeg_bin = [('C:\\ffmpeg\\bin\\ffmpeg.exe', 'ffmpeg_bin/ffmpeg.exe')]
 
 # Collect all necessary data files
 datas = [
@@ -12,7 +21,7 @@ datas = [
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=ffmpeg_bin if ffmpeg_bin else [],
     datas=datas,
     hiddenimports=[
         'PIL._tkinter_finder',
@@ -23,6 +32,17 @@ a = Analysis(
         'numpy',
         'tkinter',
         'dotenv',
+        'requests',
+        'packaging',
+        'tqdm',
+        'json',
+        'logging',
+        'os',
+        'sys',
+        'platform',
+        'subprocess',
+        'tempfile',
+        'datetime',
     ],
     hookspath=[],
     hooksconfig={},
@@ -56,12 +76,13 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # Change back to False for production release
+    console=False,  # Set to False for production release
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='resources/icon.ico',
 )
 
 coll = COLLECT(

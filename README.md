@@ -76,24 +76,57 @@ A cross-platform video processing application that helps content creators genera
 
 #### Windows
 
-1. Run the build script:
+1. Run the complete build script that handles all dependencies:
 
    ```bash
-   .\build_windows.bat
+   .\build_windows_complete.bat
    ```
+
+   This script will:
+   - Create a virtual environment
+   - Install all required dependencies
+   - Download FFmpeg automatically
+   - Build a standalone executable with PyInstaller
 
 2. The executable will be in the `dist/VideoProcessor` folder
 
-#### Mac
+3. To create a distributable package:
+   - Copy the entire `dist/VideoProcessor` folder
+   - Rename it to `VideoProcessor_Windows`
+   - Zip the folder to create `VideoProcessor_Windows.zip`
 
-1. Run the build script:
+#### macOS
+
+1. Run the complete build script:
 
    ```bash
-   chmod +x build_mac.sh
-   ./build_mac.sh
+   chmod +x build_mac_complete.sh
+   ./build_mac_complete.sh
    ```
 
+   This script will:
+   - Create a virtual environment
+   - Install all required dependencies
+   - Download FFmpeg automatically
+   - Build a standalone application with PyInstaller
+
 2. The application will be in the `dist` folder as `VideoProcessor.app`
+
+3. To create a distributable package:
+   - Create a folder named `VideoProcessor_Mac`
+   - Move `VideoProcessor.app` into this folder
+   - Zip the folder to create `VideoProcessor_Mac.zip`
+
+### Creating a Standalone Executable
+
+The build scripts are designed to create fully standalone executables that will work on computers without Python installed. Here's what makes this possible:
+
+1. **Bundled Python Interpreter**: PyInstaller includes a Python interpreter with the executable
+2. **Bundled Dependencies**: All Python packages are included in the executable
+3. **Bundled FFmpeg**: The FFmpeg binary is included, eliminating the need for separate installation
+4. **No External Requirements**: Users don't need to install anything to run the application
+
+This approach ensures that end users can simply download and run the application without worrying about dependencies or installation procedures.
 
 ## Troubleshooting
 
@@ -150,11 +183,23 @@ If you encounter any issues not covered here, please:
 
 ## Dependencies
 
-- Python 3.8 or higher
+- Python 3.8 to 3.10 (Python 3.8.x recommended for best compatibility)
 - FFmpeg installed and available in PATH
 - OpenAI or Anthropic API key
 
-### Installing FFmpeg
+### Python Version Compatibility
+
+This application has been tested and is known to work with:
+
+- Python 3.8.x (recommended)
+- Python 3.9.x
+- Python 3.10.x
+
+Python 3.11+ may work but has not been extensively tested with all dependencies.
+
+If you encounter issues with PySimpleGUI or other dependencies, try using Python 3.8.10 specifically, which is the development environment version.
+
+### FFmpeg Setup
 
 #### Windows
 
@@ -162,7 +207,7 @@ If you encounter any issues not covered here, please:
 2. Extract the files to a folder (e.g., `C:\ffmpeg`)
 3. Add the `bin` folder to your PATH environment variable
 
-#### Mac
+#### macOS
 
 ```bash
 brew install ffmpeg

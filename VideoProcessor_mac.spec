@@ -1,6 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+import sys
+
 block_cipher = None
+
+# Define FFmpeg binary location
+ffmpeg_bin = None
+if os.path.exists('ffmpeg_bin'):
+    ffmpeg_bin = [('ffmpeg_bin/ffmpeg', 'ffmpeg_bin/ffmpeg')]
 
 # Collect all necessary data files
 datas = [
@@ -12,20 +20,43 @@ datas = [
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=[],
+    binaries=ffmpeg_bin if ffmpeg_bin else [],
     datas=datas,
     hiddenimports=[
         'PIL._tkinter_finder',
         'openai',
         'anthropic',
-        'whisper',
         'pydub',
-        'moviepy'
+        'moviepy',
+        'numpy',
+        'tkinter',
+        'dotenv',
+        'requests',
+        'packaging',
+        'tqdm',
+        'json',
+        'logging',
+        'os',
+        'sys',
+        'platform',
+        'subprocess',
+        'tempfile',
+        'datetime',
     ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        'transformers',
+        'tensorflow',
+        'torch',
+        'whisper',  # Remove whisper to reduce size unless it's essential
+        'matplotlib',
+        'PyQt5',
+        'PySide2',
+        'IPython',
+        'jupyter',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -60,11 +91,14 @@ exe = EXE(
 app = BUNDLE(
     exe,
     name='VideoProcessor.app',
-    icon=None,
+    icon='resources/icon.icns',  # Make sure this file exists
     bundle_identifier='com.videoprocessor.app',
     info_plist={
         'NSHighResolutionCapable': 'True',
         'NSRequiresAquaSystemAppearance': 'False',
         'CFBundleShortVersionString': '1.0.0',
+        'CFBundleDisplayName': 'VideoProcessor',
+        'LSApplicationCategoryType': 'public.app-category.video',
+        'NSHumanReadableCopyright': 'Copyright 2025 Isaiah Dupree. All rights reserved.',
     },
 )
